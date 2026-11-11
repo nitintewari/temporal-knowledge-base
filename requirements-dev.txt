@@ -1,0 +1,2 @@
+# Development only (not needed by the graders)
+pytest>=7

@@ -1,0 +1,2 @@
+# No third-party packages: the submission uses only the Python standard library (3.9+; graded on 3.11).
+# Development tools (tests) are in requirements-dev.txt.

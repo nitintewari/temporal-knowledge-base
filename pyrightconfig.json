@@ -1,0 +1,6 @@
+{
+    "extraPaths": ["submission", "harness"],
+    "venvPath": ".",
+    "venv": ".venv",
+    "pythonVersion": "3.11"
+  }

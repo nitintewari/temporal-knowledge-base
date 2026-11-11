@@ -1,0 +1,11 @@
+snapshots_zip/
+snapshots/0*/
+*.pdf
+.env
+.venv/
+
+# Local outputs
+results/
+__pycache__/
+*.pyc
+.DS_Store
