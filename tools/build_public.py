@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ALLOW = ["submission/solution.py", "submission/tkb", "submission/NOTES.md", "tests", "docs", "tools/explore.py",
-         "tools/build_public.py", "requirements.txt", "requirements-dev.txt", "pyrightconfig.json", ".gitignore",
+         "tools/build_public.py", "tools/llm_check.py", "tools/latency_ab.py", "requirements.txt", "requirements-dev.txt", "pyrightconfig.json", ".gitignore",
          ".python-version"]
 SKIP = re.compile(r"__pycache__|\.pyc$|\.pytest_cache|\.DS_Store")
 N = 12                                            # words in a row that count as a copied passage
@@ -38,8 +38,8 @@ Python standard library only - no packages, no database. Two modes:
 
 | Mode | How | Measured with the scorer provided |
 |---|---|---|
-| **Rules only** (default) | nothing to set; never calls the network | public practice set: accuracy 0.969, final score 0.949, p95 0.04 s |
-| **Rules + LLM** | `export ANTHROPIC_API_KEY=...` (Claude Haiku) | +0.05 to +0.34 accuracy on unseen blind sets; public set 0.92-0.95; p95 2-3 s |
+| **Rules only** (default) | nothing to set; never calls the network | public practice set: accuracy 0.969, p95 0.04 s (final score 0.949 with conflicts scored against our own key) |
+| **Rules + LLM** | `export ANTHROPIC_API_KEY=...` (Claude Haiku) | blind sets, first runs: +0.04 to +0.12 accuracy over rules-only (+0.05 to +0.32 after fixes); public set 0.92-0.95, a little below rules-only; p95 2-3 s |
 
 No key is stored in this repository. Without one, the rules-only mode runs.
 

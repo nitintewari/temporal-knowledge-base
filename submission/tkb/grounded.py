@@ -114,9 +114,9 @@ def fact_lines(q: Query, R: Resolved, limit: int = MAX_FACTS) -> tuple:
         best: dict = {}
         for r in sorted(inside, key=lambda r: (r.tier.high if r.tier.high is not None else 1e18)):
             best.setdefault(r.key[:7], r.tier)                # narrowest containing tier per fact key
-        if inside:                                            # untiered products in the question stay ("Free
-            hits = [r for r in hits if not _x_matches(r, q)] + \
-                   [r for r in inside if r.tier == best[r.key[:7]]]   # Checking versus 1st Rate Checking")
+        # Untiered products in the question stay ("Free Checking versus 1st Rate Checking"). When no tier contains
+        # the amount, no tiered row is given at all: "no rate for that balance" must not become a neighbour's rate.
+        hits = [r for r in hits if not _x_matches(r, q)] + [r for r in inside if r.tier == best[r.key[:7]]]
     return [_render_row(key, tier, attrs) for (key, tier), attrs in _rows(hits)][:limit], hits
 
 

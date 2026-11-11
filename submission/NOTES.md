@@ -64,7 +64,7 @@ run of the final code (the commit before this notes update), every set in both m
 
 | Set | Rules only | Rules + LLM (p95) |
 |---|---|---|
-| Public practice set (40, kit authors) | **0.969** (final 0.949 with conflicts) | 0.9225 (2.1 s) |
+| Public practice set (40, kit authors) | **0.969** (final 0.949, conflicts scored against our own key) | 0.9225 (2.1 s) |
 | Blind set A (after its fixes) | 0.9208 | 0.9708 (2.1 s) |
 | Blind set B (after its fixes) | 0.4292 | 0.75 (2.5 s) |
 | Blind set B1 (after its fixes) | 0.5117 | 0.7029 (2.9 s) |
@@ -118,7 +118,7 @@ ingest(snapshot)                     answer(question, as_of)                    
 
 ## What "current" means (the main rules)
 
-Full list with evidence: `docs/RULES.md` (R1-R27) and `docs/PROJECT_STATE.md` (decisions D1-D70). The core:
+Full list with evidence: `docs/RULES.md` (R1-R27) and `docs/PROJECT_STATE.md` (decisions D1-D71). The core:
 
 1. **A fact is a key, not a string**: product + measure + term + qualifiers + tier. Different tiers, rate vs APY,
    standard vs jumbo, Roth vs Traditional are different facts, never conflicts.
@@ -195,17 +195,29 @@ count plain rate changes between crawls as conflicts, recall drops.
 - Search is keyword-based (BM25). Measured: when the answer was crawled, the evidence is in the top 25 passages for
   most questions; insurance and credit-limit questions in set B were missed. Semantic search was not added.
 - Rates stated only in prose are not extracted, so the kit's toy self-test (`harness/selftest`) scores 0.2.
-- Our conflicts answer key (`eval/conflicts_gold.json`) was written by us, so 10/10 there checks intent only.
+- Our conflicts answer key was written by us (it is not published), so 10/10 there checks our intent only.
 
 ## Reproduce
 
+Tests need nothing but this repository:
+
 ```bash
-python harness/run_eval.py --submission submission --eval eval/public_eval.jsonl --conflicts-gold eval/conflicts_gold.json
-TKB_LLM=off python harness/run_eval.py --submission submission --eval eval/public_eval.jsonl     # force rules-only
-pip install pytest && pytest -q        # 340 tests, about 1 s; the LLM is always off in tests (fake model)
+pip install pytest && pytest -q        # 341 tests, about 1 s; the LLM is always off in tests (fake model)
 ```
 
-Design history, decisions and evidence: `docs/PROJECT_STATE.md`, `docs/RULES.md`, `docs/EDGE_CASES.md`.
+Scoring needs the event kit, which is not part of this repository (its website crawls belong to the event). Put this
+repository's `submission/` folder in the kit's root, next to `harness/`, `snapshots_zip/` and `eval/`, then from the
+kit's root:
 
-The `run_eval.py` commands need the event kit (harness, snapshots, evaluation files), which belongs to the event and
-is not part of any public copy of this project; without it the 2 tests that call the kit's scorer are skipped.
+```bash
+TKB_LLM=off python harness/run_eval.py --submission submission --eval eval/public_eval.jsonl   # rules only
+python harness/run_eval.py --submission submission --eval eval/public_eval.jsonl              # + LLM if a key is set
+```
+
+The scorer unpacks the crawls on first run. The final scores quoted above add `--conflicts-gold <file>` with a
+conflicts key we wrote ourselves (not part of the kit or this repository), so their conflicts part checks our intent
+only; without the option the scorer reports the other parts. With a key, `python tools/llm_check.py
+eval/public_eval.jsonl` (run from the kit's root with this repository's `tools/`) prints every LLM failure with the
+API's own message, and `python tools/latency_ab.py` times the two connection methods.
+
+Design history, decisions and evidence: `docs/PROJECT_STATE.md`, `docs/RULES.md`, `docs/EDGE_CASES.md`.

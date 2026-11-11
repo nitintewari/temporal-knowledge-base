@@ -106,7 +106,7 @@ design review + reason codes); `docs/EDGE_CASES.md` (checklist, ~60 handled+test
   Second review, manual audit: in-18 names Hillcrest only; in-21 gives 170 for 2024 alone; in-23 says the schedule
   lists "Price varies"; in-24/25 decline member data while "How can I check my balance?" is answered. Known
   limitation: in-22 names Figo but cites the blog (not /personal/insurance) and adds one loosely related sentence.
-- Tests: 340 passing (incl. test_llm_layer and test_blind_c; fake model only; the LLM is forced off in tests), run with
+- Tests: 341 passing (incl. test_llm_layer and test_blind_c; fake model only; the LLM is forced off in tests), run with
   TKB_STRICT=1 (internal errors raise); every rule added in
   Phase 6 is mutation-checked (switching it off fails a test). Phase 6 rules each mutation-checked (between-crawl evidence,
   forecasts, year-only dates, both measures, non-product prices, per-crawl conflict evidence). Mutation-checked: switching off the FAQ rule, the narrowest-tier
@@ -144,7 +144,7 @@ design review + reason codes); `docs/EDGE_CASES.md` (checklist, ~60 handled+test
 - R27 an undated official page (/contact) speaks as of its fetch date; dated pages as of their byline (prose, R4).
 - Abstain only when NO evidence exists (abstaining on an answerable question scores 0).
 
-## Decisions (D1-D70)
+## Decisions (D1-D71)
 Open: D2 a rate whose effective date is after as_of (not seen in the data; not handled).
 Decided in Phase 3: D3 no model year -> list every tier, newest first · D4 answers use the as_of crawl (refined by D15) ·
 D6 prose outliers: newest statement wins (R4), so assets = $3.6 billion · D7 "last year" -> newest year and the one
@@ -239,6 +239,10 @@ of the wrong type (products, cited) are ignored. No recorded answer changed (rep
 review: a question naming a balance, amount or model year gives the LLM only that tier's facts (untiered products in
 the question stay), so another tier's value cannot pass; a question about a published example or illustration is not
 a personal quote; a mid-sentence line (PDF wrap) is never an answer. Rules-only scores unchanged on every set.
+D71 third review: when no tier contains the amount asked about, the LLM gets no tiered row at all (it could
+otherwise quote a neighbouring tier); reproduction steps now say where the event kit goes and that our conflicts
+key is not published; the two diagnostic tools are published; the README separates blind first-run LLM gains
+(+0.04 to +0.12) from gains after fixes (+0.05 to +0.32). All 434 rules answers unchanged word for word.
 Public release: a NEW repository built by tools/build_public.py from an
 allow-list, scanned for 12-word site passages (test fixtures were reworded to pass), one commit, no old history.
 

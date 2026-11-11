@@ -709,3 +709,27 @@ def test_a_question_about_a_published_example_is_not_a_personal_quote():
     mine = parse_question("What would my monthly payment be on a 15-year fixed refinance of my house?")
     out2 = apply(mine, {"route": "decline", "products": ["mortgage"], "decline": "personal_quote", "search": ""})
     assert out2.decline == "personal_quote" or mine.personal
+
+
+def test_no_tiered_rate_is_offered_when_no_tier_holds_the_amount():
+    from tkb.grounded import check, fact_lines
+    capped = ("Checking Rates\n\n| Account Type | Balance Tier | Dividend Rate | APY |\n| --- | --- | --- | --- |\n"
+              "| 1st Rate Checking | $0.01 - $9,999.99 | 3.00% | 3.04% |\n"
+              "| Free Checking | | 0.10% | 0.10% |\n\nRates are effective as of 06/02/2026.\n")
+    k = TemporalKnowledgeBase()
+    k.ingest(NS(snapshot_id="05_2026-09-28", taken_on="2026-09-28",
+                pages=[NS(url=D + "/rates", title="Rates", markdown=capped, fetched_at="2026-09-28T10:00:00Z")]))
+    R = k.store.resolved()
+    assert R is not None
+    q = parse_question("I have $50,000 in 1st Rate Checking - explain what APY that balance earns")
+    assert q.products == ["1st rate checking"] and q.x == 50_000
+    facts, _ = fact_lines(q, R)
+    assert not any("3.04%" in f for f in facts)                 # $50,000 is above the only tier's cap
+    p = [NS(text="1st Rate Checking explained.", url=D + "/rates", published=None)]
+    assert not check("At that balance the APY is 3.04%.", [1], p, facts, q.text)
+    both = parse_question("With $50,000, explain how the checking APYs compare")
+    assert set(both.products) == {"free checking", "1st rate checking"}
+    facts, _ = fact_lines(both, R)
+    assert not any("3.04%" in f for f in facts) and any("0.10%" in f for f in facts)   # untiered product stays
+    inside = parse_question("I have $5,000 in 1st Rate Checking - explain what APY that balance earns")
+    assert any("3.04%" in f for f in fact_lines(inside, R)[0])
